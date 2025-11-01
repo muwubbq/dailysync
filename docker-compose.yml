@@ -1,15 +1,23 @@
-version: '3'
+name: dailysync
 services:
   daily-sync:
-    image: 'daily-sync:latest'
     build:
       context: ./
       dockerfile: Dockerfile
+    image: daily-sync:latest
+    container_name: daily-sync
     env_file:
       - .env
-    container_name: daily-sync
-    command: yarn sync_cn
+    environment:
+      - TZ=Asia/Shanghai
+      - CRON_SCHEDULE=*/10 * * * *
+      - CRON_COMMAND=cd /app && /usr/local/bin/yarn sync_cn
+      - LOG_FILE=/var/log/dailysync.log
+    volumes:
+      - ./log:/var/log
+    restart: unless-stopped
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
+        max-file: "3"
